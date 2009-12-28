@@ -28,7 +28,7 @@ module AttributeFu
       else
         @new_objects ||= {}
         @new_objects[associated_name] ||= -1 # we want naming to start at 0
-        identifier = !conf.nil? && conf[:javascript] ? '#{number}' : @new_objects[associated_name]+=1
+        identifier = !conf.nil? && conf[:javascript] ? '{number}' : @new_objects[associated_name]+=1
         
         name << "[new][#{identifier}]"
       end
@@ -54,7 +54,7 @@ module AttributeFu
       css_selector = options.delete(:selector) || ".#{@object.class.name.split("::").last.underscore}"
       function     = options.delete(:function) || ""
       
-      function << "$(this).up('#{css_selector}').remove()"
+      function << "$(this).getParent('#{css_selector}').destroy()"
       
       @template.link_to_function(name, function, *args.push(options))
     end
@@ -86,10 +86,11 @@ module AttributeFu
       container        = opts.delete(:expression) || "'#{opts.delete(:container) || associated_name.pluralize}'"
       
       form_builder     = self # because the value of self changes in the block
+      html = form_builder.render_associated_form(object, :fields_for => { :javascript => true }, :partial => partial).to_json
       
       @template.link_to_function(name, opts) do |page|
         page << "if (typeof #{variable} == 'undefined') #{variable} = 0;"
-        page << "new Insertion.Bottom(#{container}, new Template("+form_builder.render_associated_form(object, :fields_for => { :javascript => true }, :partial => partial).to_json+").evaluate({'number': --#{variable}}).gsub(/__number_/, #{variable}))"
+        page << "$(#{container}).adopt(Elements.from(#{html}.join().replace(/__number_/, #{variable}).substitute({'number': --#{variable}})));"
       end
     end
     

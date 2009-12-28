@@ -1,3 +1,9 @@
+This is a MooTools compatible modification of James Golick's AttributeFu
+
+MooTools More dependencies:
+*Elements.from
+
+
 = AttributeFu
 
 
